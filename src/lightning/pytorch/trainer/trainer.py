@@ -1546,18 +1546,18 @@ class Trainer:
     @property
     def estimated_stepping_batches(self) -> Union[int, float]:
         r"""
-        Estimated stepping batches for the complete training inferred from DataLoaders, gradient
-        accumulation factor and distributed setup.
+        The estimated number of batches that will ``optimizer.step()`` during training.
+
+        This accounts for gradient accumulation and the current trainer configuration. This might sets up your training
+        dataloader if hadn't been set up already.
 
         ..code-block:: python
 
             def configure_optimizers(self):
                 optimizer = ...
-                scheduler = torch.optim.lr_scheduler.OneCycleLR(
-                    optimizer, max_lr=1e-3, total_steps=self.trainer.estimated_stepping_batches
-                )
+                stepping_batches = self.trainer.estimated_stepping_batches
+                scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer, max_lr=1e-3, total_steps=stepping_batches)
                 return [optimizer], [scheduler]
-
         """
         # infinite training
         if self.max_epochs == -1:

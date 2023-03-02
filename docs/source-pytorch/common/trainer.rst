@@ -1243,7 +1243,7 @@ logged_metrics
 progress_bar_metrics
 ********************
 
-.. automethod:: lightning.pytorch.trainer.Trainer.progress_bar_metrics
+.. autoproperty:: lightning.pytorch.trainer.Trainer.progress_bar_metrics
    :noindex:
 
 current_epoch
@@ -1377,3 +1377,58 @@ both conditions are met. If any of these arguments is not set, it won't be consi
     trainer = Trainer(min_steps=5, min_epochs=5, max_epochs=100)
     model = LitModel()
     trainer.fit(model)
+
+
+num_training_batches
+********************
+
+.. autoproperty:: lightning.pytorch.trainer.Trainer.num_training_batches
+   :noindex:
+
+num_sanity_val_batches
+**********************
+
+.. autoproperty:: lightning.pytorch.trainer.Trainer.num_sanity_val_batches
+   :noindex:
+
+num_val_batches
+***************
+
+.. autoproperty:: lightning.pytorch.trainer.Trainer.num_val_batches
+   :noindex:
+
+num_test_batches
+****************
+
+.. autoproperty:: lightning.pytorch.trainer.Trainer.num_test_batches
+   :noindex:
+
+num_predict_batches
+*******************
+
+.. autoproperty:: lightning.pytorch.trainer.Trainer.num_predict_batches
+   :noindex:
+
+train_dataloader
+****************
+
+.. autoproperty:: lightning.pytorch.trainer.Trainer.train_dataloader
+   :noindex:
+
+test_dataloaders
+****************
+
+.. autoproperty:: lightning.pytorch.trainer.Trainer.test_dataloaders
+   :noindex:
+
+val_dataloaders
+***************
+
+.. autoproperty:: lightning.pytorch.trainer.Trainer.val_dataloaders
+   :noindex:
+
+predict_dataloaders
+*******************
+
+.. autoproperty:: lightning.pytorch.trainer.Trainer.predict_dataloaders
+   :noindex:
