@@ -1377,11 +1377,13 @@ class Trainer:
 
     @property
     def train_dataloader(self) -> TRAIN_DATALOADERS:
+        """The training dataloader(s) used during ``trainer.fit()``."""
         if (combined_loader := self.fit_loop._combined_loader) is not None:
             return combined_loader.iterables
 
     @property
     def val_dataloaders(self) -> EVAL_DATALOADERS:
+        """The validation dataloader(s) used during ``trainer.fit()`` or ``trainer.validate()``."""
         if (combined_loader := self.fit_loop.epoch_loop.val_loop._combined_loader) is not None:
             return combined_loader.iterables
         elif (combined_loader := self.validate_loop._combined_loader) is not None:
@@ -1389,25 +1391,32 @@ class Trainer:
 
     @property
     def test_dataloaders(self) -> EVAL_DATALOADERS:
+        """The test dataloader(s) used during ``trainer.test()``."""
         if (combined_loader := self.test_loop._combined_loader) is not None:
             return combined_loader.iterables
 
     @property
     def predict_dataloaders(self) -> EVAL_DATALOADERS:
+        """The prediction dataloader(s) used during ``trainer.predict()``."""
         if (combined_loader := self.predict_loop._combined_loader) is not None:
             return combined_loader.iterables
 
     @property
     def num_training_batches(self) -> Union[int, float]:
+        """The number of training batches that will be used during ``trainer.fit()``."""
         return self.fit_loop.max_batches
 
     @property
     def num_sanity_val_batches(self) -> List[Union[int, float]]:
+        """The number of validation batches that will be used during the sanity-checking part of
+        ``trainer.fit()``."""
         max_batches = self.fit_loop.epoch_loop.val_loop.max_batches
         return [min(self.num_sanity_val_steps, batches) for batches in max_batches]
 
     @property
     def num_val_batches(self) -> List[Union[int, float]]:
+        """The number of validation batches that will be used during ``trainer.fit()`` or
+        ``trainer.validate()``."""
         if self.state.fn == TrainerFn.VALIDATING:
             return self.validate_loop.max_batches
         # if no trainer.fn is set, assume fit's validation
@@ -1416,10 +1425,12 @@ class Trainer:
 
     @property
     def num_test_batches(self) -> List[Union[int, float]]:
+        """The number of test batches that will be used during ``trainer.test()``."""
         return self.test_loop.max_batches
 
     @property
     def num_predict_batches(self) -> List[Union[int, float]]:
+        """The number of prediction batches that will be used during ``trainer.predict()``."""
         return self.predict_loop.max_batches
 
     @property

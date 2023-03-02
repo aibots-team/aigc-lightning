@@ -6,6 +6,8 @@
 Managing Data
 #############
 
+FIXME: revamp this
+
 ****************************
 Data Containers in Lightning
 ****************************
@@ -383,3 +385,8 @@ when the training will stop and run validation if necessary.
 
     # Set limit_val_batches as an int
     trainer = Trainer(limit_val_batches=100)
+
+
+# FIXME: examples with integrations
+
+# FIXME: example with Fabric

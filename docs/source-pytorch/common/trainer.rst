@@ -1228,6 +1228,8 @@ predict
 Properties
 ^^^^^^^^^^
 
+# FIXME: automethod?
+
 callback_metrics
 ****************
 
@@ -1359,21 +1361,10 @@ The metrics sent to the progress bar.
     assert progress_bar_metrics["a_val"] == 2
 
 
-predict_dataloaders
-*******************
-
-The current predict dataloaders of the trainer.
-Note that property returns a list of predict dataloaders.
-
-.. code-block:: python
-
-    used_predict_dataloaders = trainer.predict_dataloaders
-
-
 estimated_stepping_batches
 **************************
 
-Check out :meth:`~lightning.pytorch.trainer.trainer.Trainer.estimated_stepping_batches`.
+Check out :attr:`~lightning.pytorch.trainer.trainer.Trainer.estimated_stepping_batches`.
 
 state
 *****
@@ -1449,37 +1440,3 @@ both conditions are met. If any of these arguments is not set, it won't be consi
     trainer = Trainer(min_steps=5, min_epochs=5, max_epochs=100)
     model = LitModel()
     trainer.fit(model)
-
-
-train_dataloader
-****************
-
-The current train dataloader of the trainer.
-
-.. code-block:: python
-
-    used_train_dataloader = trainer.train_dataloader
-
-
-test_dataloaders
-****************
-
-The current test dataloaders of the trainer.
-Note that property returns a list of test dataloaders.
-
-
-.. code-block:: python
-
-    used_test_dataloaders = trainer.test_dataloaders
-
-val_dataloaders
-***************
-
-
-The current val dataloaders of the trainer.
-Note that property returns a list of val dataloaders.
-
-
-.. code-block:: python
-
-    used_val_dataloaders = trainer.val_dataloaders
