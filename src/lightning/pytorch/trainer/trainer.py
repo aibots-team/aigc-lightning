@@ -1143,6 +1143,14 @@ class Trainer:
 
     @property
     def log_dir(self) -> Optional[str]:
+        """The directory for the current experiment. Use this to save images to, etc...
+
+        .. code-block:: python
+
+            def training_step(self, batch, batch_idx):
+                img = ...
+                save_img(img, self.trainer.log_dir)
+        """
         if len(self.loggers) > 0:
             if not isinstance(self.loggers[0], TensorBoardLogger):
                 dirpath = self.loggers[0].save_dir
@@ -1156,6 +1164,14 @@ class Trainer:
 
     @property
     def is_global_zero(self) -> bool:
+        """Whether this process is the global zero in multi-node training.
+
+        .. code-block:: python
+
+            def training_step(self, batch, batch_idx):
+                if self.trainer.is_global_zero:
+                    print("in node 0, accelerator 0")
+        """
         return self.strategy.is_global_zero
 
     @property
@@ -1229,7 +1245,7 @@ class Trainer:
     def ckpt_path(self, ckpt_path: Optional[_PATH]) -> None:
         """Allows you to manage which checkpoint is loaded statefully.
 
-        Examples::
+        .. code-block:: python
 
             trainer = Trainer()
             trainer.ckpt_path = "my/checkpoint/file.ckpt"
@@ -1458,6 +1474,7 @@ class Trainer:
 
     @property
     def logger(self) -> Optional[Logger]:
+        """The first :class:`~lightning.pytorch.loggers.logger.Logger` being used."""
         return self.loggers[0] if len(self.loggers) > 0 else None
 
     @logger.setter
@@ -1469,6 +1486,13 @@ class Trainer:
 
     @property
     def loggers(self) -> List[Logger]:
+        """The list of class:`~lightning.pytorch.loggers.logger.Logger` used.
+
+        ..code-block:: python
+
+            for logger in trainer.loggers:
+                logger.log_metrics({"foo": 1.0})
+        """
         return self._loggers
 
     @loggers.setter
@@ -1477,14 +1501,36 @@ class Trainer:
 
     @property
     def callback_metrics(self) -> _OUT_DICT:
+        """The metrics available to callbacks.
+
+        This includes metrics logged via :meth:`~lightning.pytorch.core.module.LightningModule.log`.
+
+        ..code-block:: python
+
+            def training_step(self, batch, batch_idx):
+                self.log("a_val", 2.0)
+
+            callback_metrics = trainer.callback_metrics
+            assert callback_metrics["a_val"] == 2.0
+        """
         return self._logger_connector.callback_metrics
 
     @property
     def logged_metrics(self) -> _OUT_DICT:
+        """The metrics sent to the loggers.
+
+        This includes metrics logged via :meth:`~lightning.pytorch.core.module.LightningModule.log` with the
+        :paramref:`~lightning.pytorch.core.module.LightningModule.log.logger` argument set.
+        """
         return self._logger_connector.logged_metrics
 
     @property
     def progress_bar_metrics(self) -> _PBAR_DICT:
+        """The metrics sent to the progress bar.
+
+        This includes metrics logged via :meth:`~lightning.pytorch.core.module.LightningModule.log` with the
+        :paramref:`~lightning.pytorch.core.module.LightningModule.log.prog_bar` argument set.
+        """
         return self._logger_connector.progress_bar_metrics
 
     @property
@@ -1503,7 +1549,7 @@ class Trainer:
         Estimated stepping batches for the complete training inferred from DataLoaders, gradient
         accumulation factor and distributed setup.
 
-        Examples::
+        ..code-block:: python
 
             def configure_optimizers(self):
                 optimizer = ...
