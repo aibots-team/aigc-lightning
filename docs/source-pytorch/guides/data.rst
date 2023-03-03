@@ -387,6 +387,4 @@ when the training will stop and run validation if necessary.
     trainer = Trainer(limit_val_batches=100)
 
 
-# FIXME: examples with integrations
-
 # FIXME: example with Fabric
