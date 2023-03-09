@@ -501,8 +501,8 @@ class Trainer:
             model: Model to fit.
 
             train_dataloaders: An iterable or collection of iterables specifying training samples.
-                Alternatively, an :class:`~lightning.pytorch.core.datamodule.LightningDataModule` that defines
-                the `:class:`~lightning.pytorch.core.datamodule.LightningDataModule.train_dataloader` hook.
+                Alternatively, a :class:`~lightning.pytorch.core.datamodule.LightningDataModule` that defines
+                the `:class:`~lightning.pytorch.core.hooks.DataHooks.train_dataloader` hook.
 
             val_dataloaders: An iterable or collection of iterables specifying validation samples.
 
@@ -510,8 +510,8 @@ class Trainer:
                 keywords ``"last"`` and ``"hpc"``. If there is no checkpoint file at the path, an exception is raised.
                 If resuming from mid-epoch checkpoint, training will start from the beginning of the next epoch.
 
-            datamodule: An :class:`~lightning.pytorch.core.datamodule.LightningDataModule` that defines
-                the `:class:`~lightning.pytorch.core.datamodule.LightningDataModule.train_dataloader` hook.
+            datamodule: A :class:`~lightning.pytorch.core.datamodule.LightningDataModule` that defines
+                the `:class:`~lightning.pytorch.core.hooks.DataHooks.train_dataloader` hook.
 
         For more information about multiple dataloaders, see this :ref:`section <multiple-dataloaders>`.
         """
@@ -577,8 +577,8 @@ class Trainer:
             model: The model to validate.
 
             dataloaders: An iterable or collection of iterables specifying validation samples.
-                Alternatively, an :class:`~lightning.pytorch.core.datamodule.LightningDataModule` that defines
-                the `:class:`~lightning.pytorch.core.datamodule.LightningDataModule.val_dataloader` hook.
+                Alternatively, a :class:`~lightning.pytorch.core.datamodule.LightningDataModule` that defines
+                the `:class:`~lightning.pytorch.core.hooks.DataHooks.val_dataloader` hook.
 
             ckpt_path: Either ``"best"``, ``"last"``, ``"hpc"`` or path to the checkpoint you wish to validate.
                 If ``None`` and the model instance was passed, use the current weights.
@@ -587,8 +587,8 @@ class Trainer:
 
             verbose: If True, prints the validation results.
 
-            datamodule: An :class:`~lightning.pytorch.core.datamodule.LightningDataModule` that defines
-                the `:class:`~lightning.pytorch.core.datamodule.LightningDataModule.val_dataloader` hook.
+            datamodule: A :class:`~lightning.pytorch.core.datamodule.LightningDataModule` that defines
+                the `:class:`~lightning.pytorch.core.hooks.DataHooks.val_dataloader` hook.
 
         For more information about multiple dataloaders, see this :ref:`section <multiple-dataloaders>`.
 
@@ -672,8 +672,8 @@ class Trainer:
             model: The model to test.
 
             dataloaders: An iterable or collection of iterables specifying test samples.
-                Alternatively, an :class:`~lightning.pytorch.core.datamodule.LightningDataModule` that defines
-                the `:class:`~lightning.pytorch.core.datamodule.LightningDataModule.val_dataloader` hook.
+                Alternatively, a :class:`~lightning.pytorch.core.datamodule.LightningDataModule` that defines
+                the `:class:`~lightning.pytorch.core.hooks.DataHooks.test_dataloader` hook.
 
             ckpt_path: Either ``"best"``, ``"last"``, ``"hpc"`` or path to the checkpoint you wish to test.
                 If ``None`` and the model instance was passed, use the current weights.
@@ -682,8 +682,8 @@ class Trainer:
 
             verbose: If True, prints the test results.
 
-            datamodule: An :class:`~lightning.pytorch.core.datamodule.LightningDataModule` that defines
-                the `:class:`~lightning.pytorch.core.datamodule.LightningDataModule.test_dataloader` hook.
+            datamodule: A :class:`~lightning.pytorch.core.datamodule.LightningDataModule` that defines
+                the `:class:`~lightning.pytorch.core.hooks.DataHooks.test_dataloader` hook.
 
         For more information about multiple dataloaders, see this :ref:`section <multiple-dataloaders>`.
 
@@ -767,12 +767,12 @@ class Trainer:
         Args:
             model: The model to predict with.
 
-            dataloaders: An iterable or collection of iterables specifying test samples.
-                Alternatively, an :class:`~lightning.pytorch.core.datamodule.LightningDataModule` that defines
-                the `:class:`~lightning.pytorch.core.datamodule.LightningDataModule.val_dataloader` hook.
+            dataloaders: An iterable or collection of iterables specifying predict samples.
+                Alternatively, a :class:`~lightning.pytorch.core.datamodule.LightningDataModule` that defines
+                the `:class:`~lightning.pytorch.core.hooks.DataHooks.predict_dataloader` hook.
 
-            datamodule: An :class:`~lightning.pytorch.core.datamodule.LightningDataModule` that defines
-                the `:class:`~lightning.pytorch.core.datamodule.LightningDataModule.predict_dataloader` hook.
+            datamodule: A :class:`~lightning.pytorch.core.datamodule.LightningDataModule` that defines
+                the `:class:`~lightning.pytorch.core.hooks.DataHooks.predict_dataloader` hook.
 
             return_predictions: Whether to return predictions.
                 ``True`` by default except when an accelerator that spawns processes is used (not supported).

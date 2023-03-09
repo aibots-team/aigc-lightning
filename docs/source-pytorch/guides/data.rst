@@ -9,12 +9,9 @@ Managing Data
 Why Use LightningDataModule?
 ============================
 
-The :class:`~lightning.pytorch.core.datamodule.LightningDataModule`  is a convenient way to manage data in PyTorch Lightning.
-It encapsulates training, validation, testing, and prediction dataloaders, as well as any necessary steps for data processing,
-downloads, and transformations. By using a :class:`~lightning.pytorch.core.datamodule.LightningDataModule`, you can
-easily develop dataset-agnostic models, hot-swap different datasets, and share data splits and transformations across projects.
+For information about the :class:`~lightning.pytorch.core.datamodule.LightningDataModule`, please refer to the :ref:`datamodules <datamodules>` section in the documentation.
 
-For more information on how to use the ``LightningDataModule``, please refer to the :ref:`datamodules <datamodules>` section in the documentation.
+---------
 
 Arbitrary iterable support
 ==========================
@@ -23,8 +20,6 @@ Python iterables are objects that can be iterated or looped over. Examples of it
 In PyTorch, a :class:`torch.utils.data.DataLoader` is also an iterable which typically retrieves data from a :class:`torch.utils.data.Dataset` or :class:`torch.utils.data.IterableDataset`.
 
 The :class:`~lightning.pytorch.trainer.trainer.Trainer` works with arbitrary iterables, but most people will use a :class:`torch.utils.data.DataLoader` as the iterable to feed data to the model.
-
----------
 
 .. _multiple-dataloaders:
 
@@ -51,11 +46,11 @@ In addition to supporting arbitrary iterables, the ``Trainer`` also supports arb
     return {"a": [dl1, dl2], "b": [dl3, dl4]}
 
 Lightning automatically collates the batches from multiple iterables based on a "mode". This is done with our
-:class:`~lightning.pytorch.utilities.CombinedLoader` class.
-The list of modes available can be found in :paramref:`~lightning.pytorch.utilities.combined_loader.CombinedLoader.mode`.
+:class:`~lightning.pytorch.utilities.combined_loader.CombinedLoader` class.
+The list of modes available can be found by looking at the :paramref:`~lightning.pytorch.utilities.combined_loader.CombinedLoader.mode` documentation.
 
 By default, the ``"max_size_cycle"`` mode is used during training and the ``"sequential"`` mode is used during validation, testing, and prediction.
-To choose a different mode, you can use the :class:`~lightning.pytorch.utilities.CombinedLoader` class directly with your mode of choice:
+To choose a different mode, you can use the :class:`~lightning.pytorch.utilities.combined_loader.CombinedLoader` class directly with your mode of choice:
 
 .. code-block:: python
 
@@ -72,7 +67,7 @@ Currently, ``trainer.validate``, ``trainer.test``, and ``trainer.predict`` metho
 Support for this feature is tracked in this `issue <https://github.com/Lightning-AI/lightning/issues/16830>`__.
 
 Note that when using the ``"sequential"`` mode, you need to add an additional argument ``dataloader_idx`` to some specific hooks.
-Lightning will `raise an error <https://github.com/Lightning-AI/lightning/pull/16837>__` informing you of this requirement.
+Lightning will `raise an error <https://github.com/Lightning-AI/lightning/pull/16837>`__ informing you of this requirement.
 
 
 Using LightningDataModule
@@ -111,8 +106,8 @@ Passing the iterables to the Trainer
 ====================================
 
 The same support for arbitrary iterables, or collection of iterables applies to the dataloader arguments of
-:meth:`~lightning.pytorch.core.trainer.trainer.Trainer.fit`, :meth:`~lightning.pytorch.core.trainer.trainer.Trainer.validate`,
-:meth:`~lightning.pytorch.core.trainer.trainer.Trainer.test`, :meth:`~lightning.pytorch.core.trainer.trainer.Trainer.predict`
+:meth:`~lightning.pytorch.trainer.trainer.Trainer.fit`, :meth:`~lightning.pytorch.trainer.trainer.Trainer.validate`,
+:meth:`~lightning.pytorch.trainer.trainer.Trainer.test`, :meth:`~lightning.pytorch.trainer.trainer.Trainer.predict`
 
 --------------
 
@@ -120,7 +115,11 @@ The same support for arbitrary iterables, or collection of iterables applies to 
 Accessing DataLoaders
 *********************
 
-In the case that you require access to the DataLoader or Dataset objects, DataLoaders for each step can be accessed using the ``Trainer`` object:
+In the case that you require access to the DataLoader or Dataset objects, DataLoaders for each step can be accessed
+via the trainer properties :meth:`~lightning.pytorch.trainer.trainer.Trainer.train_dataloader`,
+:meth:`~lightning.pytorch.trainer.trainer.Trainer.val_dataloaders`,
+:meth:`~lightning.pytorch.trainer.trainer.Trainer.test_dataloaders`, and
+:meth:`~lightning.pytorch.trainer.trainer.Trainer.predict_dataloaders`.
 
 .. code-block:: python
 
@@ -129,8 +128,9 @@ In the case that you require access to the DataLoader or Dataset objects, DataLo
     dataloaders = trainer.test_dataloaders
     dataloaders = trainer.predict_dataloaders
 
-In the case of having returned multiple DataLoaders, these will match exactly what was returned in your ``*_dataloader``
-hooks or passed to the ``Trainer``
+These properties will match exactly what was returned in your ``*_dataloader`` hooks or passed to the ``Trainer``,
+meaning that if you returned a dictionary of dataloaders, these will return a dictionary of dataloaders.
+
 If you are using a :class:`~lightning.pytorch.utilities.CombinedLoader`. A flattened list of DataLoaders can be accessed by doing:
 
 .. code-block:: python
@@ -139,15 +139,16 @@ If you are using a :class:`~lightning.pytorch.utilities.CombinedLoader`. A flatt
 
     iterables = {"dl1": dl1, "dl2": dl2}
     combined_loader = CombinedLoader(iterables)
+    # access the original iterables
     assert combined_loader.iterables is iterables
+    # the `.flattened` property can be convenient
     assert combined_loader.flattened == [dl1, dl2]
-
-    # the flattened property is available for simple looping and transformations
+    # for example, to do a simple loop
     updated = []
     for dl in combined_loader.flattened:
         new_dl = apply_some_transformation_to(dl)
         updated.append(new_dl)
-    # replace the existing dataloaders
+    # it also allows you to easily replace the dataloaders
     combined_loader.flattened = updated
 
 --------------
@@ -223,10 +224,10 @@ when the training will stop and run validation if necessary.
 
 .. testcode::
 
-    # Set val_check_interval
+    # Set val_check_interval as an int
     trainer = Trainer(val_check_interval=100)
 
-    # Set limit_val_batches to 0.0 or 0
+    # Disable validation: Set limit_val_batches to 0.0 or 0
     trainer = Trainer(limit_val_batches=0.0)
 
     # Set limit_val_batches as an int
