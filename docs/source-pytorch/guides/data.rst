@@ -28,9 +28,9 @@ The :class:`~lightning.pytorch.trainer.trainer.Trainer` works with arbitrary ite
 
 .. _multiple-dataloaders:
 
-*****************
+******************
 Multiple Iterables
-*****************
+******************
 
 In addition to supporting arbitrary iterables, the ``Trainer`` also supports arbitrary collections of iterables. Some examples of this are:
 
