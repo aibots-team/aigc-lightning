@@ -6,53 +6,79 @@
 Managing Data
 #############
 
-FIXME: revamp this
-
-****************************
-Data Containers in Lightning
-****************************
-
-There are a few different data containers used in Lightning:
-
-.. list-table:: Data objects
-   :widths: 20 80
-   :header-rows: 1
-
-   * - Object
-     - Definition
-   * - :class:`~torch.utils.data.Dataset`
-     - The PyTorch :class:`~torch.utils.data.Dataset` represents a map from keys to data samples.
-   * - :class:`~torch.utils.data.IterableDataset`
-     - The PyTorch :class:`~torch.utils.data.IterableDataset` represents a stream of data.
-   * - :class:`~torch.utils.data.DataLoader`
-     - The PyTorch :class:`~torch.utils.data.DataLoader` represents a Python iterable over a Dataset.
-   * - :class:`~lightning.pytorch.core.datamodule.LightningDataModule`
-     -  A :class:`~lightning.pytorch.core.datamodule.LightningDataModule` is simply a collection of: training DataLoader(s), validation DataLoader(s), test DataLoader(s) and predict DataLoader(s), along with the matching transforms and data processing/downloads steps required.
-
-
 Why Use LightningDataModule?
 ============================
 
-The :class:`~lightning.pytorch.core.datamodule.LightningDataModule` was designed as a way of decoupling data-related hooks from the :class:`~lightning.pytorch.core.module.LightningModule` so you can develop dataset agnostic models. The :class:`~lightning.pytorch.core.datamodule.LightningDataModule` makes it easy to hot swap different Datasets with your model, so you can test it and benchmark it across domains. It also makes sharing and reusing the exact data splits and transforms across projects possible.
+A :class:`~lightning.pytorch.core.datamodule.LightningDataModule` is simply a collection of: training/validation/test/predict DataLoader(s), along with the matching transforms and data processing/downloads steps required.
+It allows you to decouple data-related hooks from the :class:`~lightning.pytorch.core.module.LightningModule` so you can develop dataset agnostic models.
+It makes it easy to hot swap different Datasets with your model, so you can test it and benchmark it across domains.
+It also makes sharing and reusing the exact data splits and transforms across projects possible.
 
 Read :ref:`this <datamodules>` for more details on LightningDataModule.
+
+Arbitrary iterable support
+==========================
+
+Python iterables are objects that can be iterated or looped over. They are sequences of data that can be accessed one
+item at a time, allowing you to perform operations on each item in the sequence.
+Examples of iterables in Python include lists and dictionaries.
+
+A PyTorch :class:`torch.utils.data.DataLoader` is also an iterable.
+The data in that case often comes from an :class:`torch.utils.data.Dataset` or :class:`torch.utils.data.IterableDataset`.
+
+The :class:`~lightning.pytorch.trainer.trainer.Trainer` works with arbitrary iterables. But most people will simply use
+:class:`torch.utils.data.DataLoader`.
 
 ---------
 
 .. _multiple-dataloaders:
 
 *****************
-Multiple Datasets
+Multiple Iterables
 *****************
 
-There are a few ways to pass multiple Datasets to Lightning:
+In addition to supporting arbitrary iterables, the ``Trainer`` also supports arbitrary collections of them. Some examples of this are:
 
-1. Create a DataLoader that iterates over multiple Datasets under the hood.
-2. In the training loop, you can pass multiple DataLoaders as a dict or list/tuple, and Lightning will
-   automatically combine the batches from different DataLoaders.
-3. In the validation, test, or prediction, you have the option to return multiple DataLoaders as list/tuple, which Lightning will call sequentially
-   or combine the DataLoaders using :class:`~lightning.pytorch.utilities.CombinedLoader`, which is what Lightning uses
-   under the hood.
+.. code-block:: python
+
+    return DataLoader(...)
+    return list(range(1000))
+
+    # pass loaders as a dict. This will create batches like this:
+    # {'a': batch_from_loader_a, 'b': batch_from_loader_b}
+    return {"a": DataLoader(...), "b": DataLoader(...)}
+
+    # pass loaders as list. This will create batches like this:
+    # [batch_from_dl_1, batch_from_dl_2]
+    return [DataLoader(...), DataLoader(...)]
+
+    # {'a': [batch_from_dl_1, batch_from_dl_2], 'b': [batch_from_dl_3, batch_from_dl_4]}
+    return {"a": [dl1, dl2], "b": [dl3, dl4]}
+
+Lightning takes care of collating the batches from multiple iterables based on a "mode". This is done with our
+:class:`~lightning.pytorch.utilities.CombinedLoader` class.
+The list of modes available can be found in :paramref:`~lightning.pytorch.utilities.combined_loader.CombinedLoader.mode`.
+
+By default, during training, the ``"max_size_cycle"`` mode is used.
+During validation/test/predict the ``sequential`` mode is used. To choose a different mode, you can use the
+:class:`~lightning.pytorch.utilities.CombinedLoader` directly:
+
+.. code-block:: python
+
+    from lightning.pytorch.utilities import CombinedLoader
+
+    iterables = {"a": DataLoader(), "b": DataLoader()}
+    combined_loader = CombinedLoader(iterables, mode="min_size")
+    model = ...
+    trainer = Trainer()
+    trainer.fit(model, combined_loader)
+
+
+The ``trainer.{validate,test,predict}`` methods currently only support the ``"sequential"`` mode, whereas ``trainer.fit`` does not supoprt it.
+Support for this feature is tracked in this `issue <https://github.com/Lightning-AI/lightning/issues/16830>`__.
+
+Note that when using the ``"sequential"`` mode, you need will need to add an additional argument ``dataloader_idx`` to some specific hooks.
+Lightning will `raise an error <https://github.com/Lightning-AI/lightning/pull/16837>__` informing you of this requirement.
 
 
 Using LightningDataModule
@@ -64,245 +90,71 @@ and Lightning will use the correct one.
 .. testcode::
 
     class DataModule(LightningDataModule):
-        ...
-
         def train_dataloader(self):
+            # any iterable or collection of iterables
             return DataLoader(self.train_dataset)
 
         def val_dataloader(self):
+            # any iterable or collection of iterables
             return [DataLoader(self.val_dataset_1), DataLoader(self.val_dataset_2)]
 
         def test_dataloader(self):
+            # any iterable or collection of iterables
             return DataLoader(self.test_dataset)
 
         def predict_dataloader(self):
+            # any iterable or collection of iterables
             return DataLoader(self.predict_dataset)
 
 
 Using LightningModule Hooks
 ===========================
 
-Concatenated Dataset
---------------------
-
-For training with multiple Datasets, you can create a :class:`~torch.utils.data.DataLoader` class
-which wraps your multiple Datasets using :class:`~torch.utils.data.ConcatDataset`. This, of course,
-also works for testing, validation, and prediction Datasets.
-
-.. testcode::
-
-    from torch.utils.data import ConcatDataset
+The exact same code as above works when overriding :class:`~lightning.pytorch.core.module.LightningModule`
 
 
-    class LitModel(LightningModule):
-        def train_dataloader(self):
-            concat_dataset = ConcatDataset(datasets.ImageFolder(traindir_A), datasets.ImageFolder(traindir_B))
-
-            loader = DataLoader(
-                concat_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.workers, pin_memory=True
-            )
-            return loader
-
-        def val_dataloader(self):
-            # SAME
-            ...
-
-        def test_dataloader(self):
-            # SAME
-            ...
-
-
-Return Multiple DataLoaders
----------------------------
-
-You can set multiple DataLoaders in your :class:`~lightning.pytorch.core.module.LightningModule`, and Lightning will take care of batch combination.
-
-.. testcode::
-
-    class LitModel(LightningModule):
-        def train_dataloader(self):
-            loader_a = DataLoader(range(6), batch_size=4)
-            loader_b = DataLoader(range(15), batch_size=5)
-
-            # pass loaders as a dict. This will create batches like this:
-            # {'a': batch from loader_a, 'b': batch from loader_b}
-            loaders = {"a": loader_a, "b": loader_b}
-
-            # OR:
-            # pass loaders as sequence. This will create batches like this:
-            # [batch from loader_a, batch from loader_b]
-            loaders = [loader_a, loader_b]
-
-            return loaders
-
-Furthermore, Lightning also supports nested lists and dicts (or a combination).
-
-.. testcode::
-
-    class LitModel(LightningModule):
-        def train_dataloader(self):
-            loader_a = DataLoader(range(8), batch_size=4)
-            loader_b = DataLoader(range(16), batch_size=2)
-
-            return {"a": loader_a, "b": loader_b}
-
-        def training_step(self, batch, batch_idx):
-            # access a dictionary with a batch from each DataLoader
-            batch_a = batch["a"]
-            batch_b = batch["b"]
-
-
-.. testcode::
-
-    class LitModel(LightningModule):
-        def train_dataloader(self):
-            loader_a = DataLoader(range(8), batch_size=4)
-            loader_b = DataLoader(range(16), batch_size=4)
-            loader_c = DataLoader(range(32), batch_size=4)
-            loader_c = DataLoader(range(64), batch_size=4)
-
-            # pass loaders as a nested dict. This will create batches like this:
-            loaders = {"loaders_a_b": [loader_a, loader_b], "loaders_c_d": {"c": loader_c, "d": loader_d}}
-            return loaders
-
-        def training_step(self, batch, batch_idx):
-            # access the data
-            batch_a_b = batch["loaders_a_b"]
-            batch_c_d = batch["loaders_c_d"]
-
-            batch_a = batch_a_b[0]
-            batch_b = batch_a_b[1]
-
-            batch_c = batch_c_d["c"]
-            batch_d = batch_c_d["d"]
-
-Alternatively, you can also pass in a :class:`~lightning.pytorch.utilities.CombinedLoader` containing multiple DataLoaders.
-
-.. testcode::
-
-    from lightning.pytorch.utilities import CombinedLoader
-
-
-    def train_dataloader(self):
-        loader_a = DataLoader()
-        loader_b = DataLoader()
-        loaders = {"a": loader_a, "b": loader_b}
-        combined_loader = CombinedLoader(loaders, mode="max_size_cycle")
-        return combined_loader
-
-
-    def training_step(self, batch, batch_idx):
-        batch_a = batch["a"]
-        batch_b = batch["b"]
-
-
-Multiple Validation/Test/Predict DataLoaders
-============================================
-
-For validation, test and predict DataLoaders, you can pass a single DataLoader or a list of them. This optional named
-parameter can be used in conjunction with any of the above use cases. You can choose to pass
-the batches sequentially or simultaneously, as is done for the training step.
-The default mode for these DataLoaders is sequential. Note that when using a sequence of DataLoaders you need
-to add an additional argument ``dataloader_idx`` in their corresponding step specific hook. The corresponding loop will process
-the DataLoaders in sequential order; that is, the first DataLoader will be processed completely, then the second one, and so on.
-
-Refer to the following for more details for the default sequential option:
-
-- :meth:`~lightning.pytorch.core.hooks.DataHooks.val_dataloader`
-- :meth:`~lightning.pytorch.core.hooks.DataHooks.test_dataloader`
-- :meth:`~lightning.pytorch.core.hooks.DataHooks.predict_dataloader`
-
-.. testcode::
-
-    def val_dataloader(self):
-        loader_1 = DataLoader()
-        loader_2 = DataLoader()
-        return [loader_1, loader_2]
-
-
-    def validation_step(self, batch, batch_idx, dataloader_idx):
-        ...
-
-
-Evaluation DataLoaders are iterated over sequentially. The above is equivalent to:
-
-.. testcode::
-
-    from lightning.pytorch.utilities import CombinedLoader
-
-
-    def val_dataloader(self):
-        loader_a = DataLoader()
-        loader_b = DataLoader()
-        loaders = {"a": loader_a, "b": loader_b}
-        combined_loaders = CombinedLoader(loaders, mode="sequential")
-        return combined_loaders
-
-
-    def validation_step(self, batch, batch_idx):
-        batch_a = batch["a"]
-        batch_b = batch["b"]
-
-
-Evaluate with Additional DataLoaders
+Passing the iterables to the Trainer
 ====================================
 
-You can evaluate your models using additional DataLoaders even if the DataLoader specific hooks haven't been defined within your
-:class:`~lightning.pytorch.core.module.LightningModule`. For example, this would be the case if your test data
-set is not available at the time your model was declared. Simply pass the test set to the :meth:`~lightning.pytorch.trainer.trainer.Trainer.test` method:
-
-.. code-block:: python
-
-    # setup your DataLoader
-    test = DataLoader(...)
-
-    # test (pass in the loader)
-    trainer.test(dataloaders=test)
+The same support for arbitrary iterables, or collection of iterables applies to the dataloader arguments of
+:meth:`~lightning.pytorch.core.trainer.trainer.Trainer.fit`, :meth:`~lightning.pytorch.core.trainer.trainer.Trainer.validate`,
+:meth:`~lightning.pytorch.core.trainer.trainer.Trainer.test`, :meth:`~lightning.pytorch.core.trainer.trainer.Trainer.predict`
 
 --------------
 
-********************************************
-Accessing DataLoaders within LightningModule
-********************************************
+*********************
+Accessing DataLoaders
+*********************
 
 In the case that you require access to the DataLoader or Dataset objects, DataLoaders for each step can be accessed using the ``Trainer`` object:
 
-.. testcode::
+.. code-block:: python
 
-    from lightning.pytorch import LightningModule
+    dataloaders = trainer.train_dataloader
+    dataloaders = trainer.val_dataloaders
+    dataloaders = trainer.test_dataloaders
+    dataloaders = trainer.predict_dataloaders
 
-
-    class Model(LightningModule):
-        def test_step(self, batch, batch_idx, dataloader_idx):
-            test_dl = self.trainer.test_dataloaders[dataloader_idx]
-            test_dataset = test_dl.dataset
-            test_sampler = test_dl.sampler
-            ...
-            # extract metadata, etc. from the dataset:
-            ...
-
-If you are using a :class:`~lightning.pytorch.utilities.CombinedLoader` object which allows you to fetch batches from a collection of DataLoaders
-simultaneously which supports collections of DataLoader such as list, tuple, or dictionary. The DataLoaders can be accessed using the same collection structure:
+In the case of having returned multiple DataLoaders, these will match exactly what was returned in your ``*_dataloader``
+hooks or passed to the ``Trainer``
+If you are using a :class:`~lightning.pytorch.utilities.CombinedLoader`. A flattened list of DataLoaders can be accessed by doing:
 
 .. code-block:: python
 
     from lightning.pytorch.utilities import CombinedLoader
 
-    test_dl1 = ...
-    test_dl2 = ...
+    iterables = {"dl1": dl1, "dl2": dl2}
+    combined_loader = CombinedLoader(iterables)
+    assert combined_loader.iterables is iterables
+    assert combined_loader.flattened == [dl1, dl2]
 
-    # If you provided a list of DataLoaders:
-
-    combined_loader = CombinedLoader([test_dl1, test_dl2])
-    list_of_loaders = combined_loader.iterables
-    test_dl1 = list_of_loaders.loaders[0]
-
-
-    # If you provided dictionary of DataLoaders:
-
-    combined_loader = CombinedLoader({"dl1": test_dl1, "dl2": test_dl2})
-    dictionary_of_loaders = combined_loader.iterables
-    test_dl1 = dictionary_of_loaders["dl1"]
+    # the flattened property is available for simple looping and transformations
+    updated = []
+    for dl in combined_loader.flattened:
+        new_dl = apply_some_transformation_to(dl)
+        updated.append(new_dl)
+    # replace the existing dataloaders
+    combined_loader.flattened = updated
 
 --------------
 
