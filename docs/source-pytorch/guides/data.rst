@@ -9,25 +9,20 @@ Managing Data
 Why Use LightningDataModule?
 ============================
 
-A :class:`~lightning.pytorch.core.datamodule.LightningDataModule` is simply a collection of: training/validation/test/predict DataLoader(s), along with the matching transforms and data processing/downloads steps required.
-It allows you to decouple data-related hooks from the :class:`~lightning.pytorch.core.module.LightningModule` so you can develop dataset agnostic models.
-It makes it easy to hot swap different Datasets with your model, so you can test it and benchmark it across domains.
-It also makes sharing and reusing the exact data splits and transforms across projects possible.
+The :class:`~lightning.pytorch.core.datamodule.LightningDataModule`  is a convenient way to manage data in PyTorch Lightning.
+It encapsulates training, validation, testing, and prediction dataloaders, as well as any necessary steps for data processing,
+downloads, and transformations. By using a :class:`~lightning.pytorch.core.datamodule.LightningDataModule`, you can
+easily develop dataset-agnostic models, hot-swap different datasets, and share data splits and transformations across projects.
 
-Read :ref:`this <datamodules>` for more details on LightningDataModule.
+For more information on how to use the ``LightningDataModule``, please refer to the :ref:`datamodules <datamodules>` section in the documentation.
 
 Arbitrary iterable support
 ==========================
 
-Python iterables are objects that can be iterated or looped over. They are sequences of data that can be accessed one
-item at a time, allowing you to perform operations on each item in the sequence.
-Examples of iterables in Python include lists and dictionaries.
+Python iterables are objects that can be iterated or looped over. Examples of iterables in Python include lists and dictionaries.
+In PyTorch, a :class:`torch.utils.data.DataLoader` is also an iterable which typically retrieves data from a :class:`torch.utils.data.Dataset` or :class:`torch.utils.data.IterableDataset`.
 
-A PyTorch :class:`torch.utils.data.DataLoader` is also an iterable.
-The data in that case often comes from an :class:`torch.utils.data.Dataset` or :class:`torch.utils.data.IterableDataset`.
-
-The :class:`~lightning.pytorch.trainer.trainer.Trainer` works with arbitrary iterables. But most people will simply use
-:class:`torch.utils.data.DataLoader`.
+The :class:`~lightning.pytorch.trainer.trainer.Trainer` works with arbitrary iterables, but most people will use a :class:`torch.utils.data.DataLoader` as the iterable to feed data to the model.
 
 ---------
 
@@ -37,7 +32,7 @@ The :class:`~lightning.pytorch.trainer.trainer.Trainer` works with arbitrary ite
 Multiple Iterables
 *****************
 
-In addition to supporting arbitrary iterables, the ``Trainer`` also supports arbitrary collections of them. Some examples of this are:
+In addition to supporting arbitrary iterables, the ``Trainer`` also supports arbitrary collections of iterables. Some examples of this are:
 
 .. code-block:: python
 
@@ -55,13 +50,12 @@ In addition to supporting arbitrary iterables, the ``Trainer`` also supports arb
     # {'a': [batch_from_dl_1, batch_from_dl_2], 'b': [batch_from_dl_3, batch_from_dl_4]}
     return {"a": [dl1, dl2], "b": [dl3, dl4]}
 
-Lightning takes care of collating the batches from multiple iterables based on a "mode". This is done with our
+Lightning automatically collates the batches from multiple iterables based on a "mode". This is done with our
 :class:`~lightning.pytorch.utilities.CombinedLoader` class.
 The list of modes available can be found in :paramref:`~lightning.pytorch.utilities.combined_loader.CombinedLoader.mode`.
 
-By default, during training, the ``"max_size_cycle"`` mode is used.
-During validation/test/predict the ``sequential`` mode is used. To choose a different mode, you can use the
-:class:`~lightning.pytorch.utilities.CombinedLoader` directly:
+By default, the ``"max_size_cycle"`` mode is used during training and the ``"sequential"`` mode is used during validation, testing, and prediction.
+To choose a different mode, you can use the :class:`~lightning.pytorch.utilities.CombinedLoader` class directly with your mode of choice:
 
 .. code-block:: python
 
@@ -74,10 +68,10 @@ During validation/test/predict the ``sequential`` mode is used. To choose a diff
     trainer.fit(model, combined_loader)
 
 
-The ``trainer.{validate,test,predict}`` methods currently only support the ``"sequential"`` mode, whereas ``trainer.fit`` does not supoprt it.
+Currently, ``trainer.validate``, ``trainer.test``, and ``trainer.predict`` methods only support the ``"sequential"`` mode, while ``trainer.fit`` method does not support it.
 Support for this feature is tracked in this `issue <https://github.com/Lightning-AI/lightning/issues/16830>`__.
 
-Note that when using the ``"sequential"`` mode, you need will need to add an additional argument ``dataloader_idx`` to some specific hooks.
+Note that when using the ``"sequential"`` mode, you need to add an additional argument ``dataloader_idx`` to some specific hooks.
 Lightning will `raise an error <https://github.com/Lightning-AI/lightning/pull/16837>__` informing you of this requirement.
 
 
