@@ -1,5 +1,5 @@
-Upgrade from 1.9 to the latest
-##############################
+Upgrade from 1.9 to the 2.0
+###########################
 
 Regular User
 ************

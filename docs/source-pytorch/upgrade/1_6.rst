@@ -1,7 +1,7 @@
 :orphan:
 
-Upgrade from 1.6 to the latest
-##############################
+Upgrade from 1.6 to the 2.0
+###########################
 
 Regular User
 ************
