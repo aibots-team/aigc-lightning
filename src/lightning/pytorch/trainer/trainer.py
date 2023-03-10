@@ -1405,13 +1405,13 @@ class Trainer:
         return self.fit_loop.epoch_loop.batch_progress.is_last_batch
 
     @property
-    def train_dataloader(self) -> TRAIN_DATALOADERS:
+    def train_dataloader(self) -> Optional[TRAIN_DATALOADERS]:
         """The training dataloader(s) used during ``trainer.fit()``."""
         if (combined_loader := self.fit_loop._combined_loader) is not None:
             return combined_loader.iterables
 
     @property
-    def val_dataloaders(self) -> EVAL_DATALOADERS:
+    def val_dataloaders(self) -> Optional[EVAL_DATALOADERS]:
         """The validation dataloader(s) used during ``trainer.fit()`` or ``trainer.validate()``."""
         if (combined_loader := self.fit_loop.epoch_loop.val_loop._combined_loader) is not None:
             return combined_loader.iterables
@@ -1419,13 +1419,13 @@ class Trainer:
             return combined_loader.iterables
 
     @property
-    def test_dataloaders(self) -> EVAL_DATALOADERS:
+    def test_dataloaders(self) -> Optional[EVAL_DATALOADERS]:
         """The test dataloader(s) used during ``trainer.test()``."""
         if (combined_loader := self.test_loop._combined_loader) is not None:
             return combined_loader.iterables
 
     @property
-    def predict_dataloaders(self) -> EVAL_DATALOADERS:
+    def predict_dataloaders(self) -> Optional[EVAL_DATALOADERS]:
         """The prediction dataloader(s) used during ``trainer.predict()``."""
         if (combined_loader := self.predict_loop._combined_loader) is not None:
             return combined_loader.iterables
