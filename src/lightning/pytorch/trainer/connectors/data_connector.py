@@ -15,7 +15,6 @@ import multiprocessing
 import os
 from dataclasses import dataclass, field
 from typing import Any, Iterable, Optional, Tuple, Union
-from weakref import proxy
 
 from torch.utils.data import BatchSampler, DataLoader, Sampler, SequentialSampler
 from torch.utils.data.distributed import DistributedSampler
@@ -44,7 +43,7 @@ from lightning.pytorch.utilities.warnings import PossibleUserWarning
 warning_cache = WarningCache()
 
 
-class DataConnector:
+class _DataConnector:
     def __init__(self, trainer: "pl.Trainer"):
         self.trainer = trainer
         self._datahook_selector: Optional[_DataHookSelector] = None
@@ -133,7 +132,7 @@ class DataConnector:
             _check_dataloader_none(predict_dataloaders, trainer.predict_loop._data_source, fn)
 
         # Attach the trainer to the LightningModule
-        model.trainer = proxy(trainer)
+        model.trainer = trainer
 
     def attach_dataloaders(
         self,
