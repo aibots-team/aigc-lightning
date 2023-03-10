@@ -91,5 +91,3 @@ Passing the iterables to the Trainer
 The same support for arbitrary iterables, or collection of iterables applies to the dataloader arguments of
 :meth:`~lightning.pytorch.trainer.trainer.Trainer.fit`, :meth:`~lightning.pytorch.trainer.trainer.Trainer.validate`,
 :meth:`~lightning.pytorch.trainer.trainer.Trainer.test`, :meth:`~lightning.pytorch.trainer.trainer.Trainer.predict`
-
---------------

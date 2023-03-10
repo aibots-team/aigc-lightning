@@ -41,6 +41,3 @@ If you are using a :class:`~lightning.pytorch.utilities.CombinedLoader`. A flatt
         updated.append(new_dl)
     # it also allows you to easily replace the dataloaders
     combined_loader.flattened = updated
-
-
---------------

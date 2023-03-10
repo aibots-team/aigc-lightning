@@ -47,5 +47,3 @@ when the training will stop and run validation if necessary.
 
     # Set limit_val_batches as an int
     trainer = Trainer(limit_val_batches=100)
-
---------------
