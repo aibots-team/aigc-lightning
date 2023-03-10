@@ -206,7 +206,7 @@ Current Lightning Users
    Train on single or multiple TPUs <accelerators/tpu>
    Train on MPS <accelerators/mps>
    Use a pretrained model <advanced/pretrained>
-   Inject Custom Data Iterables <data/custom_data_iterables>
+   data/data
    model/own_your_loop
 
 .. toctree::
@@ -281,8 +281,3 @@ Current Lightning Users
 .. raw:: html
 
    </div>
-
-.. PyTorch-Lightning documentation master file, created by
-   sphinx-quickstart on Fri Nov 15 07:48:22 2019.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
